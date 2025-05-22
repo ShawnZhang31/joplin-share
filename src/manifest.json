@@ -1,0 +1,16 @@
+{
+	"manifest_version": 1,
+	"id": "com.shawnzhang31.joplin_share",
+	"app_min_version": "3.3",
+	"version": "1.0.0",
+	"name": "Share Notes",
+	"description": "the plugin using for publish, share notes",
+	"author": "守着瓜的猹",
+	"homepage_url": "https://github.com/ShawnZhang31/joplin-share",
+	"repository_url": "https://github.com/ShawnZhang31/joplin-share",
+	"keywords": [],
+	"categories": [],
+	"screenshots": [],
+	"icons": {},
+	"promo_tile": {}
+}

@@ -3,5 +3,12 @@
     "saveSuccess": "Saved successfully to: ",
     "noNote": "No note selected",
     "saveDialogTitle": "Save HTML File",
-    "htmlFile": "HTML File"
+    "htmlFile": "HTML File",
+    "shareDialogTitle": "Share Settings",
+    "shareTypePublic": "Public",
+    "shareTypeEncrypted": "Encrypted",
+    "shareTypeLabel": "Share type:",
+    "expirationLabel": "Expiration (days):",
+    "shareButton": "Share",
+    "cancelButton": "Cancel"
 }

@@ -3,5 +3,12 @@
     "saveSuccess": "已成功保存到: ",
     "noNote": "未选中任何笔记",
     "saveDialogTitle": "保存 HTML 文件",
-    "htmlFile": "HTML 文件"
+    "htmlFile": "HTML 文件",
+    "shareDialogTitle": "分享设置",
+    "shareTypePublic": "公开",
+    "shareTypeEncrypted": "加密",
+    "shareTypeLabel": "分享类型:",
+    "expirationLabel": "有效时间(天):",
+    "shareButton": "分享",
+    "cancelButton": "取消"
 }

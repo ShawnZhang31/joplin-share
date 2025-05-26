@@ -10,5 +10,17 @@
     "shareTypeLabel": "分享类型:",
     "expirationLabel": "有效时间(天):",
     "shareButton": "分享",
-    "cancelButton": "取消"
+    "cancelButton": "取消",
+    "password": "密码",
+    "encrypted": "已加密",
+    "encryptedNoteTitle": "加密的笔记",
+    "enterPasswordPrompt": "请输入密码查看此笔记内容",
+    "passwordPlaceholder": "输入密码",
+    "decrypt": "解密",
+    "wrongPassword": "密码错误",
+    "shareSuccessMessage": "笔记已成功导出为HTML文件",
+    "validDays": "有效期(天)",
+    "savePathLabel": "保存路径:",
+    "saveButton": "保存",
+    "saveFailed": "保存失败"
 }

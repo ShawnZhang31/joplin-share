@@ -30,6 +30,7 @@
     "aws-sdk": "^2.1692.0",
     "electron-log": "^5.4.0",
     "i18n": "^0.15.1",
-    "joplin-renderer": "^1.0.8"
+    "joplin-renderer": "^1.0.8",
+    "markdown-it": "^14.1.0"
   }
 }

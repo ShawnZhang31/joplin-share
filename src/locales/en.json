@@ -10,5 +10,17 @@
     "shareTypeLabel": "Share type:",
     "expirationLabel": "Expiration (days):",
     "shareButton": "Share",
-    "cancelButton": "Cancel"
+    "cancelButton": "Cancel",
+    "password": "Password",
+    "encrypted": "Encrypted",
+    "encryptedNoteTitle": "Encrypted Note",
+    "enterPasswordPrompt": "Please enter the password to view this note",
+    "passwordPlaceholder": "Enter password",
+    "decrypt": "Decrypt",
+    "wrongPassword": "Wrong password",
+    "shareSuccessMessage": "Note successfully exported as HTML file",
+    "validDays": "Valid for days",
+    "savePathLabel": "Save path:",
+    "saveButton": "Save",
+    "saveFailed": "Save failed"
 }

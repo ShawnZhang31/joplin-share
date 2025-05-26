@@ -4,7 +4,7 @@ import * as path from 'path';
 import * as fs from 'fs-extra';
 // 修改导入方式，确保与实际模块结构匹配
 const MarkdownIt = require('markdown-it');
-const { MarkupToHtml } = require('joplin-renderer');
+const { MarkupToHtml } = require('@joplin/renderer');
 
 // Share 类实现笔记分享功能
 export class Share {
@@ -183,6 +183,7 @@ export class Share {
                 
                 if (result && result.html) {
                     console.info('HTML 渲染成功!');
+                    console.info('Plugin assets:', result.pluginAssets);
                     
                     // 构建完整的 HTML 文档
                     const htmlContent = `

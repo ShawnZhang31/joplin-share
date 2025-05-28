@@ -2,6 +2,8 @@ import joplin from 'api';
 import { ToolbarButtonLocation } from 'api/types';
 import * as path from 'path';
 import * as fs from 'fs-extra';
+import { exportNoteToHtml } from './md2html';
+import { MarkdownRenderer } from './MarkdownRender';
 // 修改导入方式，确保与实际模块结构匹配
 const MarkdownIt = require('markdown-it');
 const { MarkupToHtml } = require('@joplin/renderer');
@@ -12,6 +14,7 @@ export class Share {
     private SHARE_COMMAND = 'shareNoteToLocal';
     private mdRender: any; // MarkdownIt 实例
     private markupToHtml: any; // MarkupToHtml 实例
+    private markdownRenderer: MarkdownRenderer;
     
     constructor() {
         // 初始化 markdown-it 渲染器
@@ -24,10 +27,14 @@ export class Share {
         
         // 初始化 joplin-renderer
         this.markupToHtml = new MarkupToHtml();
+
+        // 初始化 MarkdownRenderer
+        this.markdownRenderer = new MarkdownRenderer();
     }
 
     // 初始化方法
     public async init() {
+
         // 获取当前语言并加载对应的语言文件
         const locale = (await joplin.settings.globalValue('locale')) || 'en';
         console.info('Locale:', locale);
@@ -176,148 +183,160 @@ export class Share {
                 color: '#333333',
                 codeBgColor: '#f5f5f5',
             };
-            
+
             try {
-                // 使用已初始化的 MarkupToHtml 实例进行渲染
-                const result = await this.markupToHtml.render(MarkupToHtml.MARKUP_LANGUAGE_MARKDOWN, note.body, theme, options);
-                
-                if (result && result.html) {
-                    console.info('HTML 渲染成功!');
-                    console.info('Plugin assets:', result.pluginAssets);
-                    
-                    // 构建完整的 HTML 文档
-                    const htmlContent = `
-                    <!DOCTYPE html>
-                    <html>
-                    <head>
-                        <meta charset="UTF-8">
-                        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-                        <title>${note.title || 'Joplin Note'}</title>
-                        <style>
-                            body {
-                                font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-                                line-height: 1.6;
-                                color: #333;
-                                max-width: 800px;
-                                margin: 0 auto;
-                                padding: 20px;
-                            }
-                            img {
-                                max-width: 100%;
-                            }
-                            pre {
-                                background-color: #f5f5f5;
-                                padding: 10px;
-                                border-radius: 5px;
-                                overflow-x: auto;
-                            }
-                            code {
-                                font-family: Menlo, Monaco, Consolas, 'Courier New', monospace;
-                                background-color: #f5f5f5;
-                                padding: 2px 4px;
-                                border-radius: 3px;
-                            }
-                            blockquote {
-                                border-left: 4px solid #ddd;
-                                padding-left: 15px;
-                                color: #666;
-                                margin-left: 0;
-                            }
-                            table {
-                                border-collapse: collapse;
-                                width: 100%;
-                            }
-                            table, th, td {
-                                border: 1px solid #ddd;
-                            }
-                            th, td {
-                                padding: 8px 12px;
-                            }
-                            th {
-                                background-color: #f5f5f5;
-                            }
-                            ${result.cssStrings ? result.cssStrings.join('\n') : ''}
-                        </style>
-                    </head>
-                    <body>
-                        <h1>${note.title || 'Joplin Note'}</h1>
-                        ${result.html}
-                    </body>
-                    </html>`;
-                    
-                    return htmlContent;
-                } else {
-                    throw new Error('HTML 渲染结果不包含 html 属性');
-                }
-            } catch (rendererError) {
-                // 如果 joplin-renderer 失败，回退使用已初始化的 markdown-it
-                console.warn('joplin-renderer 渲染失败，使用 markdown-it 作为备选方案:', rendererError);
-                
-                // 构建 HTML 文档
-                const markdownHtml = `
-                <!DOCTYPE html>
-                <html>
-                <head>
-                    <meta charset="UTF-8">
-                    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-                    <title>${note.title || 'Joplin Note'}</title>
-                    <style>
-                        body {
-                            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-                            line-height: 1.6;
-                            color: #333;
-                            max-width: 800px;
-                            margin: 0 auto;
-                            padding: 20px;
-                        }
-                        img {
-                            max-width: 100%;
-                        }
-                        pre {
-                            background-color: #f5f5f5;
-                            padding: 10px;
-                            border-radius: 5px;
-                            overflow-x: auto;
-                        }
-                        code {
-                            font-family: Menlo, Monaco, Consolas, 'Courier New', monospace;
-                            background-color: #f5f5f5;
-                            padding: 2px 4px;
-                            border-radius: 3px;
-                        }
-                        blockquote {
-                            border-left: 4px solid #ddd;
-                            padding-left: 15px;
-                            color: #666;
-                            margin-left: 0;
-                        }
-                        table {
-                            border-collapse: collapse;
-                            width: 100%;
-                        }
-                        table, th, td {
-                            border: 1px solid #ddd;
-                        }
-                        th, td {
-                            padding: 8px 12px;
-                        }
-                        th {
-                            background-color: #f5f5f5;
-                        }
-                    </style>
-                </head>
-                <body>
-                    <h1>${note.title || 'Joplin Note'}</h1>
-                    ${this.mdRender.render(note.body)}
-                </body>
-                </html>`;
-                
-                console.log("成功使用 markdown-it 渲染 HTML 内容");
-                return markdownHtml;
+                await this.markdownRenderer.init();
+                const htmlContent = await this.markdownRenderer.render(note.id);
+                console.info('Markdown 渲染成功!');
+                console.info(htmlContent);
+                return htmlContent;
+            } catch (error) {
+                console.error("初始化 MarkupToHtml 失败:", error);
             }
-        } catch (error) {
-            console.error("HTML 渲染错误:", error);
-            throw error;
+            
+        //     try {
+        //         // 使用已初始化的 MarkupToHtml 实例进行渲染
+        //         const result = await this.markupToHtml.render(MarkupToHtml.MARKUP_LANGUAGE_MARKDOWN, note.body, theme, options);
+                
+        //         if (result && result.html) {
+        //             console.info('HTML 渲染成功!');
+        //             console.info('Plugin assets:', result.pluginAssets);
+                    
+        //             // 构建完整的 HTML 文档
+        //             const htmlContent = `
+        //             <!DOCTYPE html>
+        //             <html>
+        //             <head>
+        //                 <meta charset="UTF-8">
+        //                 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        //                 <title>${note.title || 'Joplin Note'}</title>
+        //                 <style>
+        //                     body {
+        //                         font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+        //                         line-height: 1.6;
+        //                         color: #333;
+        //                         max-width: 800px;
+        //                         margin: 0 auto;
+        //                         padding: 20px;
+        //                     }
+        //                     img {
+        //                         max-width: 100%;
+        //                     }
+        //                     pre {
+        //                         background-color: #f5f5f5;
+        //                         padding: 10px;
+        //                         border-radius: 5px;
+        //                         overflow-x: auto;
+        //                     }
+        //                     code {
+        //                         font-family: Menlo, Monaco, Consolas, 'Courier New', monospace;
+        //                         background-color: #f5f5f5;
+        //                         padding: 2px 4px;
+        //                         border-radius: 3px;
+        //                     }
+        //                     blockquote {
+        //                         border-left: 4px solid #ddd;
+        //                         padding-left: 15px;
+        //                         color: #666;
+        //                         margin-left: 0;
+        //                     }
+        //                     table {
+        //                         border-collapse: collapse;
+        //                         width: 100%;
+        //                     }
+        //                     table, th, td {
+        //                         border: 1px solid #ddd;
+        //                     }
+        //                     th, td {
+        //                         padding: 8px 12px;
+        //                     }
+        //                     th {
+        //                         background-color: #f5f5f5;
+        //                     }
+        //                     ${result.cssStrings ? result.cssStrings.join('\n') : ''}
+        //                 </style>
+        //             </head>
+        //             <body>
+        //                 <h1>${note.title || 'Joplin Note'}</h1>
+        //                 ${result.html}
+        //             </body>
+        //             </html>`;
+                    
+        //             const htmlContent2 = await exportNoteToHtml(note.id)
+
+        //             return htmlContent2 || htmlContent;
+        //         } else {
+        //             throw new Error('HTML 渲染结果不包含 html 属性');
+        //         }
+        //     } catch (rendererError) {
+        //         // 如果 joplin-renderer 失败，回退使用已初始化的 markdown-it
+        //         console.warn('joplin-renderer 渲染失败，使用 markdown-it 作为备选方案:', rendererError);
+                
+        //         // 构建 HTML 文档
+        //         const markdownHtml = `
+        //         <!DOCTYPE html>
+        //         <html>
+        //         <head>
+        //             <meta charset="UTF-8">
+        //             <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        //             <title>${note.title || 'Joplin Note'}</title>
+        //             <style>
+        //                 body {
+        //                     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+        //                     line-height: 1.6;
+        //                     color: #333;
+        //                     max-width: 800px;
+        //                     margin: 0 auto;
+        //                     padding: 20px;
+        //                 }
+        //                 img {
+        //                     max-width: 100%;
+        //                 }
+        //                 pre {
+        //                     background-color: #f5f5f5;
+        //                     padding: 10px;
+        //                     border-radius: 5px;
+        //                     overflow-x: auto;
+        //                 }
+        //                 code {
+        //                     font-family: Menlo, Monaco, Consolas, 'Courier New', monospace;
+        //                     background-color: #f5f5f5;
+        //                     padding: 2px 4px;
+        //                     border-radius: 3px;
+        //                 }
+        //                 blockquote {
+        //                     border-left: 4px solid #ddd;
+        //                     padding-left: 15px;
+        //                     color: #666;
+        //                     margin-left: 0;
+        //                 }
+        //                 table {
+        //                     border-collapse: collapse;
+        //                     width: 100%;
+        //                 }
+        //                 table, th, td {
+        //                     border: 1px solid #ddd;
+        //                 }
+        //                 th, td {
+        //                     padding: 8px 12px;
+        //                 }
+        //                 th {
+        //                     background-color: #f5f5f5;
+        //                 }
+        //             </style>
+        //         </head>
+        //         <body>
+        //             <h1>${note.title || 'Joplin Note'}</h1>
+        //             ${this.mdRender.render(note.body)}
+        //         </body>
+        //         </html>`;
+                
+        //         console.log("成功使用 markdown-it 渲染 HTML 内容");
+        //         return markdownHtml;
+        //     }
+            } catch (error) {
+                console.error("HTML 渲染错误:", error);
+                throw error;
         }
     }
     
